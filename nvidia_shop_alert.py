@@ -1,4 +1,5 @@
 import os
+from colorama import init, Fore, Style
 from dotenv import load_dotenv
 import requests
 import datetime
@@ -6,6 +7,7 @@ import json
 import time
 import html
 
+init()
 load_dotenv()
 
 DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL')
@@ -28,9 +30,10 @@ def alert_on_discord(message):
 def check_availability(product):
     current_time = datetime.datetime.now()
     if product['prdStatus'] == 'out_of_stock':
-        print(f"{current_time}: {product['productTitle']} out of stock")
+        print(
+            f"{current_time}: {product['productTitle']} {Fore.RED}out of stock{Style.RESET_ALL}")
     else:
-        message = f"{current_time}: {product['productTitle']} in stock"
+        message = f"{current_time}: {product['productTitle']} {Fore.GREEN}in stock{Style.RESET_ALL}"
         print(message)
         alert_on_discord(message)
         for i in product['retailers']:
