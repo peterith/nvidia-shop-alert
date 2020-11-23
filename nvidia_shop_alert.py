@@ -33,9 +33,9 @@ def check_availability(product):
         print(
             f"{current_time}: {product['productTitle']} {Fore.RED}out of stock{Style.RESET_ALL}")
     else:
-        message = f"{current_time}: {product['productTitle']} {Fore.GREEN}in stock{Style.RESET_ALL}"
-        print(message)
-        alert_on_discord(message)
+        print(
+            f"{current_time}: {product['productTitle']} {Fore.GREEN}in stock{Style.RESET_ALL}")
+        alert_on_discord(f"{current_time}: {product['productTitle']} in stock")
         for i in product['retailers']:
             link = html.unescape(i['purchaseLink'])
             print(link)
