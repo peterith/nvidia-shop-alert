@@ -10,6 +10,7 @@ load_dotenv()
 
 DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL')
 GPUs = os.getenv('GPUS') or '3070,3080,3090'
+FETCH_INTERVAL = os.getenv('FETCH_INTERVAL') or 2
 NVIDIA_URL = 'https://api.nvidia.partners/edge/product/search?page=1&limit=9&locale=en-gb&manufacturer=NVIDIA'
 SKU_MAP = {'3070': 'NVGFT070', '3080': 'NVGFT080', '3090': 'NVGFT090'}
 
@@ -41,7 +42,9 @@ def check_availability(product):
 def main():
     skus = get_SKUs()
     while True:
-        data = requests.get(NVIDIA_URL).json()
+        response = requests.get(NVIDIA_URL, headers={
+                                'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.66 Safari/537.36'})
+        data = response.json()
         products = data['searchedProducts']
         featured_product = products['featuredProduct']
         if (featured_product and featured_product['productSKU'] in skus):
@@ -49,6 +52,7 @@ def main():
         for i in products['productDetails']:
             if (i['productSKU'] in skus):
                 check_availability(i)
+        time.sleep(FETCH_INTERVAL)
 
 
 if __name__ == '__main__':
