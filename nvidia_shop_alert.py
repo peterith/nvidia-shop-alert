@@ -21,23 +21,29 @@ links = {}
 
 
 def main():
+    session = requests.Session()
+    session.headers.update(HEADERS)
     while True:
-        response = requests.get(NVIDIA_URL, headers=HEADERS)
-        data = response.json()
-        products = data['searchedProducts']
-        featured_product = products['featuredProduct']
-        if (featured_product):
-            check_availability(featured_product)
-        for i in products['productDetails']:
-            check_availability(i)
-        time.sleep(FETCH_INTERVAL)
+        try:
+            response = session.get(NVIDIA_URL)
+            data = response.json()
+            products = data['searchedProducts']
+            featured_product = products['featuredProduct']
+            if (featured_product):
+                check_availability(featured_product)
+            for i in products['productDetails']:
+                check_availability(i)
+            time.sleep(FETCH_INTERVAL)
+        except requests.ConnectionError as error:
+            print(
+                f"{datetime.datetime.now()}: {Fore.MAGENTA}{error}{Style.RESET_ALL}")
 
 
 def check_availability(product):
     if product['productSKU'] not in statuses:
         initialise_product(product)
     check_status(product)
-    check_retailers(product)
+    links[product['productSKU']] = get_retailer_links(product)
 
 
 def initialise_product(product):
@@ -53,15 +59,17 @@ def check_status(product):
             f"{datetime.datetime.now()}: {product['productTitle']} {product['prdStatus']}")
 
 
-def check_retailers(product):
+def get_retailer_links(product):
+    result = []
     current_time = datetime.datetime.now()
     for i in product['retailers']:
+        result.append(i['purchaseLink'])
         if i['purchaseLink'] not in links[product['productSKU']]:
-            links[product['productSKU']].append(i['purchaseLink'])
             link = html.unescape(i['purchaseLink'])
             print(f"{current_time}: {product['productTitle']} link")
             print(link)
             alert_on_discord(link)
+    return result
 
 
 def print_status(product):
