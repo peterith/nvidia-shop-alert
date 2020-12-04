@@ -21,8 +21,7 @@ links = {}
 
 
 def main():
-    session = requests.Session()
-    session.headers.update(HEADERS)
+    session = get_requests_session()
     while True:
         try:
             response = session.get(NVIDIA_URL)
@@ -34,9 +33,16 @@ def main():
             for i in products['productDetails']:
                 check_availability(i)
             time.sleep(FETCH_INTERVAL)
-        except requests.ConnectionError as error:
+        except Exception as error:
             print(
                 f"{datetime.datetime.now()}: {Fore.MAGENTA}{error}{Style.RESET_ALL}")
+            session = get_requests_session()
+
+
+def get_requests_session():
+    session = requests.Session()
+    session.headers.update(HEADERS)
+    return session
 
 
 def check_availability(product):
